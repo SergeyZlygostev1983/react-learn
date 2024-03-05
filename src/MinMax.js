@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from 'prop-types';
 
-Counter.propTypes = {
+MinMax.propTypes = {
     min: PropTypes.number,
-    max: PropTypes.number.isRequired
+    max: PropTypes.number.isRequired,
+    current: PropTypes.number.isRequired,
+    onChange: PropTypes.func.isRequired
 };
 
-function Counter({ min = 3, max }) {
-    let [ current, setCurrent ] = useState(min);
+function MinMax({ min = 1, max, current, onChange }) {
 
     function applyCurrent(num) {
         let validNum = Math.max(min, Math.min(max, num));
-        setCurrent(validNum);
+        onChange(validNum);
+        console.log('here');
     }
 
     function parseCurrent(e) {
@@ -22,10 +24,6 @@ function Counter({ min = 3, max }) {
     let inc = () => applyCurrent(current + 1);
     let dec = () => applyCurrent(current - 1);
 
-    useEffect(() => {
-        applyCurrent(current);
-    }, [min, max]);
-
     return <div>
         <button type="button" onClick={ () => dec() }>-</button>
         <input type="text" value={ current } onChange={parseCurrent}/>
@@ -33,4 +31,4 @@ function Counter({ min = 3, max }) {
     </div>
 }
 
-export default Counter;
+export default MinMax;

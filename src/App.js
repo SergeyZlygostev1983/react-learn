@@ -1,20 +1,75 @@
 import React, {useState} from "react";
-import Counter from "./Counter";
+import MinMax from "./MinMax";
+import {func} from "prop-types";
 
 export default function() {
-    let [ maxTest, setMaxTest ] = useState(10);
-    let setMaxTest5 = () => setMaxTest(5);
+    let [ products, setProducts ] = useState(productsStub());
+
+    let setCnt = (id, cnt) => {
+        setProducts(
+            products.map(prod => prod.id != id ? prod : ({
+                ...prod,
+                cnt
+            }) )
+        );
+    }
 
     return <div className="test">
-        <h3>Function max = 7</h3>
-        <Counter max={7}/>
-        <hr/>
-        <h3>Function 20, 50</h3>
-        <Counter min={20} max={50}/>
-        <hr/>
-        <h3>Function max = 10</h3>
-        <Counter min={1} max={maxTest}/>
-        <hr/>
-        <button type="button" onClick={setMaxTest5}>Set 5</button>
+        <h1>Products list</h1>
+        <table>
+            <tbody>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Price</th>
+                    <th>Cnt</th>
+                    <th>Total</th>
+                </tr>
+                {
+                    products.map((prod, index) => (
+                        <tr key={prod.id}>
+                            <td>{index + 1}</td>
+                            <td>{prod.title}</td>
+                            <td>{prod.price}</td>
+                            <td><MinMax max={prod.rest} current={prod.cnt} onChange={cnt => setCnt(prod.id, cnt)} /></td>
+                            <td></td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
     </div>;
+}
+
+function productsStub() {
+    return [
+        {
+            id: 100,
+            title: 'Iphone 200',
+            price: 12000,
+            rest: 10,
+            cnt: 1
+        },
+        {
+            id: 101,
+            title: 'Samsung AAZ8',
+            price: 22000,
+            rest: 5,
+            cnt: 1
+        },
+        {
+            id: 103,
+            title: 'Nokia 3310',
+            price: 5000,
+            rest: 2,
+            cnt: 1
+        },
+        {
+            id: 105,
+            title: 'Huawei ZZ',
+            price: 15000,
+            rest: 8,
+            cnt: 1
+        }
+    ]
 }
