@@ -13,7 +13,6 @@ function MinMax({ min = 1, max, current, onChange }) {
     function applyCurrent(num) {
         let validNum = Math.max(min, Math.min(max, num));
         onChange(validNum);
-        console.log('here');
     }
 
     function parseCurrent(e) {
