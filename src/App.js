@@ -1,64 +1,57 @@
-import React, {useMemo, useState} from "react";
-import MinMax from "./MinMax";
-import useWindowSize from "./hooks/useWindowSize";
+import React, {useState} from "react";
+
+import Cart from "./Cart";
+import Order from "./Order";
+import Result from "./Result";
+
+import SettingsContext from "./contexts/settings";
 
 export default function() {
-    let {width, height} = useWindowSize();
-    console.log(width, height);
+    // settings
+    let [settings, setSettings] = useState({ lang: 'ru', theme: 'light' });
 
+    // router parody
+    let [page, setPage] = useState('cart');
+    let moveToCart = () => setPage('cart');
+    let moveToOrder = () => setPage('order');
+    let moveToResult = () => setPage('result');
+
+    // products
     let [ products, setProducts ] = useState(productsStub());
+    let [ showDetails, setShowDetails ] = useState(false);
+    let [ showFaq, setShowFaq ] = useState(false);
 
-    let total = products.reduce((sum, pr) => {
-        return pr.price * pr.cnt + sum;
-    }, 0);
+    let total = products.reduce((sum, pr) => pr.price * pr.cnt + sum, 0);
 
-    // let total = useMemo(() => products.reduce((sum, pr) => pr.price * pr.cnt + sum, 0), [products]);
-
-    let setCnt = (id, cnt) => {
-        setProducts(
-            products.map(prod => prod.id != id ? prod : ({
-                ...prod,
-                cnt
-            }) )
-        );
+    let setProductCnt = (id, cnt) => {
+        setProducts(products.map(prod => prod.id != id ? prod : ({ ...prod, cnt })));
     }
 
     let removeProduct = (id) => {
         setProducts(products.filter(el => el.id !== id));
     }
 
-    return <div className="test container mt-1">
-        <h1>Products list</h1>
-        <table>
-            <tbody>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Price</th>
-                    <th>Cnt</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-                {
-                    products.map((prod, index) => (
-                        <tr key={prod.id}>
-                            <td>{index + 1}</td>
-                            <td>{prod.title}</td>
-                            <td>{prod.price}</td>
-                            <td><MinMax max={prod.rest} current={prod.cnt} onChange={cnt => setCnt(prod.id, cnt)} /></td>
-                            <td>{ prod.price * prod.cnt }</td>
-                            <td>
-                                <button type="button" onClick={() => removeProduct(prod.id)}>X</button>
-                                <button type="button" onClick={() => setCnt(prod.id, prod.rest)}>MAX</button>
-                            </td>
-                        </tr>
-                    ))
-                }
-            </tbody>
-        </table>
-        <hr/>
-        <strong>Total: {total}</strong>
-    </div>;
+
+    return <SettingsContext.Provider value={settings}>
+        <div className="container mt-1">
+            { page === 'cart' &&
+                <Cart
+                    onNext={moveToOrder}
+                    products={products}
+                    onChange={setProductCnt}
+                    onRemove={removeProduct}
+                /> }
+            { page === 'order' && <Order onNext={moveToResult} onPrev={moveToCart} /> }
+            { page === 'result' && <Result products={products} /> }
+
+            <hr/>
+            <footer>
+                <button type="button" onClick={() => setSettings({...settings, lang: 'ru'})}>ru</button>
+                <button type="button" onClick={() => setSettings({...settings, lang: 'en'})}>en</button>
+            </footer>
+
+        </div>;
+    </SettingsContext.Provider>
 }
 
 function productsStub() {
