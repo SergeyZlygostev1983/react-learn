@@ -1,11 +1,14 @@
-import React from "react";
+import React from 'react'
 
-export default function({products, orderData}) {
-    let total = products.reduce((sum, pr) => pr.price * pr.cnt + sum, 0);
+import { observer } from 'mobx-react-lite';
+import useStore from './hooks/useStore'
 
-    return <div>
-        <h1>{orderData.name} your order is done!</h1>
-        <hr/>
-        <strong>Total: {total}</strong>
-    </div>;
-}
+export default observer(function({ orderData }){
+	let [ cart ] = useStore('cart');
+
+	return <div>
+		<h1>{ orderData.name }, yout order is done!</h1>
+		<hr/>
+		<strong>Total: { cart.total }</strong>
+	</div>;
+});

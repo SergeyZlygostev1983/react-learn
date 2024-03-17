@@ -1,42 +1,48 @@
-import React from "react";
-import MinMax from './MinMax/index'
+import React from 'react'
+import useStore from './hooks/useStore'
 
-export default function({onNext, products, onChange, onRemove}) {
-    let total = products.reduce((sum, pr) => pr.price * pr.cnt + sum, 0);
+import MinMax from './MinMax'
+import { observer } from 'mobx-react-lite';
 
-    return <div>
-        <h1>Cart</h1>
-        <hr/>
-        <table>
-            <tbody>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Price</th>
-                    <th>Cnt</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-                {
-                    products.map((prod, index) => (
-                        <tr key={prod.id}>
-                            <td>{index + 1}</td>
-                            <td>{prod.title}</td>
-                            <td>{prod.price}</td>
-                            <td><MinMax max={prod.rest} current={prod.cnt} onChange={cnt => onChange(prod.id, cnt)} /></td>
-                            <td>{ prod.price * prod.cnt }</td>
-                            <td>
-                                <button type="button" onClick={() => onRemove(prod.id)}>X</button>
-                                <button type="button" onClick={() => onChange(prod.id, prod.rest)}>MAX</button>
-                            </td>
-                        </tr>
-                    ))
-                }
-            </tbody>
-        </table>
-        <hr/>
-        <strong onClick={() => setShowDetails(true)}>Total: {total}</strong>
-        <hr/>
-        <button type="button" className="btn btn-primary" onClick={onNext}>Move to order</button>
-    </div>;
+export default observer(Cart);
+
+function Cart({ onNext }){
+	let [ cart ] = useStore('cart');
+	let { products, total, remove, change } = cart;
+	
+	return <div>
+		<h1>Cart</h1>
+		<hr/>
+		<table>
+			<tbody>
+				<tr>
+					<th>#</th>
+					<th>Title</th>
+					<th>Price</th>
+					<th>Cnt</th>
+					<th>Total</th>
+					<th>Action</th>
+				</tr>
+				{ products.map((pr, i) => (
+					<tr key={pr.id}>
+						<td>{ i + 1 }</td>
+						<td>{ pr.title }</td>
+						<td>{ pr.price }</td>
+						<td>
+							<MinMax min={1} max={pr.rest} current={pr.cnt} onChange={cnt => change(pr.id, cnt)} />
+						</td>
+						<td>{ pr.price * pr.cnt }</td>
+						<td>
+							<button type="button" onClick={() => remove(pr.id)}>X</button>
+							<button type="button" onClick={() => change(pr.id, pr.rest)}>MAX</button>
+						</td>
+					</tr>
+				)) }
+			</tbody>
+		</table>
+		<hr/>
+		<strong>Total: { total }</strong>
+		<hr/>
+		<button type="button" className="btn btn-primary" onClick={onNext}>Move to order</button>
+	</div>;
 }
