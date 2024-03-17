@@ -31,6 +31,27 @@ export default function() {
         setProducts(products.filter(el => el.id !== id));
     }
 
+    // order
+    let [orderForm, setOrderForm] = useState([
+        { name: 'email', label: 'Email', value: '', valid: false, pattern: /^.+@.+$/ },
+        { name: 'phone', label: 'Phone', value: '', valid: false, pattern: /^\d{5,10}.+$/ },
+        { name: 'name', label: 'Name', value: '', valid: false, pattern: /^.{2,}$/ },
+    ]);
+
+    let orderData = {};
+    orderForm.forEach(field => {
+        orderData[field.name] = field.value;
+    });
+
+    let orderFormUpdate = (name, value) => {
+        setOrderForm(orderForm.map(field => {
+            if(field.name != name) {
+                return field;
+            }
+            let valid = field.pattern.test(value);
+            return { ...field, value, valid };
+        }));
+    };
 
     return <SettingsContext.Provider value={settings}>
         <div className="container mt-1">
@@ -41,8 +62,20 @@ export default function() {
                     onChange={setProductCnt}
                     onRemove={removeProduct}
                 /> }
-            { page === 'order' && <Order onNext={moveToResult} onPrev={moveToCart} /> }
-            { page === 'result' && <Result products={products} /> }
+            { page === 'order' &&
+                <Order
+                    fields={orderForm}
+                    onNext={moveToResult}
+                    onPrev={moveToCart}
+                    onChange={orderFormUpdate}
+                />
+            }
+            { page === 'result' &&
+                <Result
+                    products={products}
+                    orderData={orderData}
+                />
+            }
 
             <hr/>
             <footer>
