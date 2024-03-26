@@ -1,67 +1,57 @@
 import React, { useState } from 'react'
+import { Routes, Route, Link } from 'react-router-dom'
 
-import Cart from './Cart';
-import Order from './Order';
-import Result from './Result';
-
-import SettingContext from './contexts/settings';
+import Home from './views/Home';
+import Product from './views/Product';
+import Cart from './views/Cart';
+import Order from './views/Order';
+import Result from './views/Result';
+import E404 from './views/E404';
 
 export default function(){
-	/* settings */
-	let [ settings, setSettings ] = useState({ lang: 'ru', theme: 'light' });
 
-	/* router parody */
-	let [ page, setPage ] = useState('cart');
-	let moveToCart = () => setPage('cart');
-	let moveToOrder= () => setPage('order');
-	let moveToResult = () => setPage('result');
-
-	/* order */
-	let [ orderForm, setOrderForm ] = useState([
-		{ name: 'email', label: 'Email', value: '', valid: false, pattern: /^.+@.+$/ },
-		{ name: 'phone', label: 'Phone', value: '', valid: false, pattern: /^\d{5,12}.+$/ },
-		{ name: 'name', label: 'Name', value: '', valid: false, pattern: /^.{2,}$/ }
-	]);
-
-	let orderData = {};
-
-	orderForm.forEach(field => {
-		orderData[field.name] = field.value;
-	});
-
-	let orderFormUpdate = (name, value) => {
-		setOrderForm(orderForm.map(field => {
-			if(field.name != name){
-				return field;
-			}
-
-			let valid = field.pattern.test(value);
-			return { ...field, value, valid };
-		}));
-	}
-
-	return <SettingContext.Provider value={settings}>
-		<div className="container mt-1">
-			{ page === 'cart' &&
-				<Cart onNext={moveToOrder} />
-			}
-			{ page === 'order' &&
-				<Order
-					fields={orderForm}
-					onChange={orderFormUpdate}
-					onNext={moveToResult}
-					onPrev={moveToCart}
-				/>
-			}
-			{ page === 'result' &&
-				<Result orderData={orderData} />
-			}
-			<hr/>
-			<footer>
-				<button type="button" onClick={() => setSettings({ ...settings, lang: 'ru' })}>ru</button>
-				<button type="button" onClick={() => setSettings({ ...settings, lang: 'en' })}>en</button>
-			</footer>
+	return <>
+		<header>
+			<div className="container mt-1">
+				<div className="row justify-content-between">
+					<div className="col">
+						Logo
+					</div>
+					<div className="col">
+						In cart: 0
+					</div>
+				</div>
+				<hr/>
+			</div>
+		</header>
+		<div>
+			<div className="container">
+				<div className="row">
+					<aside className="col col-3">
+						<ul className="list-group">
+							<li className="list-group-item"><Link to="/">Home</Link></li>
+							<li className="list-group-item"><Link to="/cart">Cart</Link></li>
+							<li className="list-group-item"><Link to="/order">Order</Link></li>
+						</ul>
+						
+					</aside>
+					<main className="col col-9">
+						<Routes>
+							<Route path="/" element={<Home />} />
+							<Route path="/product/:id" element={<Product />} />
+							<Route path="/cart" element={<Cart />} />
+							<Route path="/order" element={<Order />} />
+							<Route path="/result" element={<Result />} />
+							<Route path="*" element={<E404 />} />
+						</Routes>
+					</main>
+				</div>
+			</div>
 		</div>
-	</SettingContext.Provider>;
+		<footer className="mt-1">
+			<hr/>
+			<div className="container">2022</div>
+		</footer>
+	</>
 }
 

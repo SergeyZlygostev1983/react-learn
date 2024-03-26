@@ -1,20 +1,29 @@
 import React, { useState } from 'react'
 import { Modal, Button } from 'react-bootstrap';
 
-export default function({ fields, onChange, onPrev, onNext }){
-	let isValid = fields.every(f => f.valid);
+import useStore from './../hooks/useStore'
+import { observer } from 'mobx-react-lite';
+
+import { Link, useNavigate } from 'react-router-dom'
+
+export default observer(function(){
+	console.log('order');
+	const navigate = useNavigate();
+	let [ orderStore ] = useStore('order');
+	
 	let [ showModal, setShowModal ] = useState(false);
 	let [ confirmed, setConfirmed ] = useState(false);
 	let openModal = () => setShowModal(true);
 	let closeModal = () => setShowModal(false);
 	let sendForm = () => {
 		setConfirmed(true);
+		orderStore.send(); // then || await
 		closeModal();
 	}
 
 	let onExited = () => {
 		if(confirmed){
-			onNext();
+			navigate('/result');
 		}
 	};
 
@@ -22,7 +31,7 @@ export default function({ fields, onChange, onPrev, onNext }){
 		<h1>Input data</h1>
 		<hr/>
 		<form>
-		{ fields.map(field => (
+		{ orderStore.form.map(field => (
 			<div className="form-group" key={field.name}>
 				<label>{field.label}</label>
 				<input
@@ -30,14 +39,14 @@ export default function({ fields, onChange, onPrev, onNext }){
 					className={`form-control ${field.value.length && !field.valid ? 'border border-danger' : ''}`}
 					name={field.name}
 					value={field.value}
-					onChange={e => onChange(field.name, e.target.value.trim())}
+					onChange={e => orderStore.update(field.name, e.target.value.trim())}
 				/>
 			</div>
 		)) }
 		</form>
 		<hr/>
-		<button type="button" className="btn btn-warning" onClick={onPrev}>Back to cart</button>
-		<button type="button" className="btn btn-success" onClick={openModal} disabled={!isValid}>
+		<Link to="/" className="btn btn-warning">Back to cart</Link>
+		<button type="button" className="btn btn-success" onClick={openModal} disabled={!orderStore.formValid}>
 			Send
 		</button>
 		<Modal show={showModal} onHide={closeModal} onExited={onExited}>
@@ -57,4 +66,4 @@ export default function({ fields, onChange, onPrev, onNext }){
 			</Modal.Footer>
 		</Modal>
 	</div>;
-}
+})

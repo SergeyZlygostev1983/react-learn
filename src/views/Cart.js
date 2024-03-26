@@ -1,12 +1,15 @@
 import React from 'react'
-import useStore from './hooks/useStore'
+import MinMax from './../MinMax'
 
-import MinMax from './MinMax'
+import useStore from './../hooks/useStore'
 import { observer } from 'mobx-react-lite';
+
+import { Link } from 'react-router-dom'
 
 export default observer(Cart);
 
-function Cart({ onNext }){
+function Cart(){
+	console.log('cart');
 	let [ cart ] = useStore('cart');
 	let { products, total, remove, change } = cart;
 	
@@ -43,6 +46,6 @@ function Cart({ onNext }){
 		<hr/>
 		<strong>Total: { total }</strong>
 		<hr/>
-		<button type="button" className="btn btn-primary" onClick={onNext}>Move to order</button>
+		<Link className="btn btn-primary" to="/order">Move to order</Link>
 	</div>;
 }
