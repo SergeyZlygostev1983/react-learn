@@ -1,14 +1,21 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
+
+// tmp
+const BASEURL = 'http://faceprog.ru/reactcourseapi/cart/';
 
 export default class Cart{
-	items = [  
-		{ id: 100, cnt: 3 },
-		{ id: 101, cnt: 1 }
-	];
+	items = [];
+	#token = null;
 	
+	get itemsDetailed(){
+		return this.items.map(item => {
+			let details = this.rootStore.products.item(item.id);
+			return { ...details, ...item };
+		})
+	}
+
 	get total(){
-		return 0;
-		/* return this.products.reduce((sum, pr) => sum + pr.price * pr.cnt, 0); */
+		return this.itemsDetailed.reduce((sum, pr) => sum + pr.price * pr.cnt, 0);
 	}
 
 	inCart(id){
@@ -16,15 +23,49 @@ export default class Cart{
 	}
 
 	change = (id, cnt) => {
-		/* let product = this.products.find(pr => pr.id == id);
+		let item = this.items.find(item => item.id == id);
 
-		if(product !== undefined){
-			product.cnt = Math.max(1, Math.min(product.rest, cnt));
-		} */
+		if(item !== undefined){
+			let detailts = this.itemsDetailed.find(item => item.id == id);
+			item.cnt = Math.max(1, Math.min(detailts.rest, cnt));
+		}
 	}
 
-	remove = (id) => {
-		/* this.products = this.products.filter(pr => pr.id !== id); */
+	add = async (id) => {
+		if(!this.inCart(id)){
+			let response = await fetch(`${BASEURL}add.php?token=${this.#token}&id=${id}`);
+			let res = await response.json();
+
+			if(res){
+				this.items.push({ id, cnt: 1 });
+			}
+		}
+	}
+
+	remove = async (id) => {
+		if(this.inCart(id)){
+			let response = await fetch(`${BASEURL}remove.php?token=${this.#token}&id=${id}`);
+			let res = await response.json();
+
+			if(res){
+				this.items = this.items.filter(item => item.id != id);
+			}
+		}
+	}
+
+	load = async () => {
+		let curToken = this.rootStore.storage.getItem('CART__TOKEN');
+		let response = await fetch(`${BASEURL}load.php?token=${curToken}`);
+		let { cart, token, needUpdate } = await response.json();
+
+		if(needUpdate){
+			this.rootStore.storage.setItem('CART__TOKEN', token);
+		}
+
+		runInAction(() => {
+			this.items = cart; 
+			this.#token = token;
+		});
 	}
 
 	constructor(rootStore){

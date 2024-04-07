@@ -11,6 +11,8 @@ import StoreContext from './contexts/store'
 import RootStore from './store'
 
 const store = new RootStore();
+store.products.load();
+store.cart.load();
 
 ReactDom.render(
 	<BrowserRouter>

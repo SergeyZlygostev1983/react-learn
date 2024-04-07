@@ -1,12 +1,8 @@
-import React, { useState } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
+import React from 'react'
+import { Link } from 'react-router-dom'
 
-import Home from './views/Home';
-import Product from './views/Product';
-import Cart from './views/Cart';
-import Order from './views/Order';
-import Result from './views/Result';
-import E404 from './views/E404';
+import CartStat from './components/cart';
+import RouterView from './routes'
 
 export default function(){
 
@@ -18,7 +14,7 @@ export default function(){
 						Logo
 					</div>
 					<div className="col">
-						In cart: 0
+						<CartStat />
 					</div>
 				</div>
 				<hr/>
@@ -33,17 +29,9 @@ export default function(){
 							<li className="list-group-item"><Link to="/cart">Cart</Link></li>
 							<li className="list-group-item"><Link to="/order">Order</Link></li>
 						</ul>
-						
 					</aside>
 					<main className="col col-9">
-						<Routes>
-							<Route path="/" element={<Home />} />
-							<Route path="/product/:id" element={<Product />} />
-							<Route path="/cart" element={<Cart />} />
-							<Route path="/order" element={<Order />} />
-							<Route path="/result" element={<Result />} />
-							<Route path="*" element={<E404 />} />
-						</Routes>
+						<RouterView />
 					</main>
 				</div>
 			</div>
