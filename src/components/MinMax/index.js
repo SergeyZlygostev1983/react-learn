@@ -6,6 +6,7 @@ import style from './style.module.css';
 MinMaxLazy.propTypes = propTypes;
 
 function MinMaxLazy({ min = 1, max, current, onChange }){
+	console.log('render');
 	let inp = useRef();
 
 	function onKeyPress(e){

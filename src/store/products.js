@@ -9,8 +9,7 @@ export default class Products{
 	}
 
 	async load(){
-		let response = await fetch('http://faceprog.ru/reactcourseapi/products/all.php');
-		let products = await response.json();
+		let products = await this.api.all();
 
 		runInAction(() => {
 			this.products = products;
@@ -21,6 +20,7 @@ export default class Products{
 	constructor(rootStore){
 		makeAutoObservable(this);
 		this.rootStore = rootStore;
+		this.api = this.rootStore.api.products;
 	}
 }
 

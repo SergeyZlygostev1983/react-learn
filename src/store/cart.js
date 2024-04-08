@@ -1,11 +1,9 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-// tmp
-const BASEURL = 'http://faceprog.ru/reactcourseapi/cart/';
-
 export default class Cart{
 	items = [];
 	#token = null;
+	idInProccess = [];
 	
 	get itemsDetailed(){
 		return this.items.map(item => {
@@ -18,45 +16,63 @@ export default class Cart{
 		return this.itemsDetailed.reduce((sum, pr) => sum + pr.price * pr.cnt, 0);
 	}
 
-	inCart(id){
+	inCart = (id) => {
 		return this.items.some(item => item.id == id);
 	}
 
-	change = (id, cnt) => {
+	inProccess = (id) => {
+		return this.idInProccess.some(el => el == id);
+	}
+
+	change = async (id, cnt) => {
 		let item = this.items.find(item => item.id == id);
 
 		if(item !== undefined){
 			let detailts = this.itemsDetailed.find(item => item.id == id);
-			item.cnt = Math.max(1, Math.min(detailts.rest, cnt));
+			cnt = Math.max(1, Math.min(detailts.rest, cnt));
+			let res = await this.api.change(this.#token, id, cnt);
+
+			if(res){
+				runInAction(() => {
+					item.cnt = cnt;
+				});
+			}
 		}
 	}
 
 	add = async (id) => {
-		if(!this.inCart(id)){
-			let response = await fetch(`${BASEURL}add.php?token=${this.#token}&id=${id}`);
-			let res = await response.json();
+		if(!this.inCart(id) && !this.inProccess(id)){
+			this.idInProccess.push(id);
+			let res = await this.api.add(this.#token, id);
 
-			if(res){
-				this.items.push({ id, cnt: 1 });
-			}
+			runInAction(() => {
+				if(res){
+					this.items.push({ id, cnt: 1 });
+				}
+
+				this.idInProccess = this.idInProccess.filter(el => el != id);
+			});
 		}
 	}
 
 	remove = async (id) => {
-		if(this.inCart(id)){
-			let response = await fetch(`${BASEURL}remove.php?token=${this.#token}&id=${id}`);
-			let res = await response.json();
+		if(this.inCart(id) && !this.inProccess(id)){
+			this.idInProccess.push(id);
+			let res = await this.api.remove(this.#token, id);
 
-			if(res){
-				this.items = this.items.filter(item => item.id != id);
-			}
+			runInAction(() => {
+				if(res){
+					this.items = this.items.filter(item => item.id != id);
+				}
+
+				this.idInProccess = this.idInProccess.filter(el => el != id);
+			});
 		}
 	}
 
 	load = async () => {
 		let curToken = this.rootStore.storage.getItem('CART__TOKEN');
-		let response = await fetch(`${BASEURL}load.php?token=${curToken}`);
-		let { cart, token, needUpdate } = await response.json();
+		let { cart, token, needUpdate } = await this.api.load(curToken);
 
 		if(needUpdate){
 			this.rootStore.storage.setItem('CART__TOKEN', token);
@@ -71,6 +87,7 @@ export default class Cart{
 	constructor(rootStore){
 		makeAutoObservable(this);
 		this.rootStore = rootStore;
+		this.api = this.rootStore.api.cart;
 	}
 }
 
